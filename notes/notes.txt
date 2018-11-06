@@ -1,0 +1,7 @@
+
+NFFT
+	requires nfft 3.2.4
+	gcc bla.c -L/usr/local/lib -lnfft3
+
+MATLAB irt library
+	in file "nufft_init.m" commented line 294
