@@ -1,0 +1,51 @@
+https://arxiv.org/pdf/0812.4933.pdf		Compressed sensing imaging techniques for radio interferometry
+
+Ferrari paper
+https://ieeexplore.ieee.org/abstract/document/6882424	Distributed image reconstruction for very large arrays in radio astronomy
+
+
+
+SARA
+https://ieeexplore.ieee.org/abstract/document/6507650		Sparsity Averaging for Compressive Imaging
+https://academic.oup.com/mnras/article/426/2/1223/974193	borked sara
+
+https://arxiv.org/abs/1806.04596 		WB HyperSARA
+https://arxiv.org/pdf/1801.02417.pdf	Polarized SARA
+https://arxiv.org/abs/1710.08810		(SARA) Cygnus A super-resolved via convex optimisation from VLA data
+
+https://ieeexplore.ieee.org/abstract/document/8448968	Scalable Algorithm for Polarization Constrained Sparse Interferometric Stokes Imaging
+https://ieeexplore.ieee.org/abstract/document/8448891	Time-Regularized Blind Deconvolution Approach for Radio Interferometry
+
+
+
+Multi-frequency
+https://arxiv.org/abs/1504.06847		(nterms) Multi-frequency image reconstruction for radio interferometry. A regularized inverse problem approach
+https://arxiv.org/abs/1703.03608		Multi-frequency image reconstruction for radio-interferometry with self-tuned regularization parameters
+
+
+https://arxiv.org/pdf/1803.00889.pdf 	Scalable Bayesian Uncertainty Quantification in Imaging Inverse Problems via Convex Optimization
+https://arxiv.org/pdf/1605.07640.pdf	deep wideband single pointings and mosaics in radio interferometry - how accurately do we reconstruct intensities and spectral indices of faint sources?
+http://iopscience.iop.org/article/10.1088/0004-637X/770/2/91/meta#apj471644s5	wide-field wide-band interferometric imaging: the wb a-projection and hybrid algorithms
+
+
+
+SCALABLE splitting algorithms
+https://www.sciencedirect.com/science/article/pii/S0923596518306416		Distribution strategies for very large 3D image deconvolution algorithms
+https://ieeexplore.ieee.org/abstract/document/7760495					MUFFIN
+
+
+
+Spherical Harmonics
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=1141085&tag=1	Spherical Harmonics and Earth-Rotation Synthesis in Radio Astronomy
+
+https://ieeexplore.ieee.org/abstract/document/7265080					Sampling Sparse Signals on the Sphere: Algorithms and Applications
+https://arxiv.org/pdf/1302.0327.pdf										all-sky interferometry with spherical harmonic transit telescopes
+https://arxiv.org/pdf/1504.04485.pdf									Imaging on a Sphere with Interferometers: the Spherical Wave Harmonic Transform
+https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6006544&tag=1		A Novel Sampling Theorem on the Sphere
+
+
+
+DYNAMIC RANGE
+https://www.aanda.org/articles/aa/pdf/2008/40/aa9104-07.pdf		Pixelization and dynamic range in radio interferometry
+https://link.springer.com/content/pdf/10.1007%2Fs10686-005-9000-7.pdf	THE COTTON-SCHWAB CLEAN AT ULTRA-HIGH DYNAMIC RANGE
+
