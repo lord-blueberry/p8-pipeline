@@ -1,0 +1,20 @@
+taskname           = "listvis"
+vis                =  "simkat64-default.ms"
+options            =  "ap"
+datacolumn         =  "data"
+field              =  ""
+spw                =  "*"
+selectdata         =  False
+antenna            =  ""
+timerange          =  ""
+correlation        =  ""
+scan               =  ""
+feed               =  ""
+array              =  ""
+observation        =  ""
+uvrange            =  ""
+average            =  ""
+showflags          =  False
+pagerows           =  50
+listfile           =  ""
+#listvis(vis="simkat64-default.ms",options="ap",datacolumn="data",field="",spw="*",selectdata=False,antenna="",timerange="",correlation="",scan="",feed="",array="",observation="",uvrange="",average="",showflags=False,pagerows=50,listfile="")
