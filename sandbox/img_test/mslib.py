@@ -162,7 +162,7 @@ class MS_jon(UVData):
         # CASA's convention is unclear: the docs contradict themselves,
         # but empirically it appears to match uvfits
         # So conjugate the visibilities and flip the uvws:
-        data_array = np.conj(tb.getcol(data_column))
+        data_array = tb.getcol(data_column)
         self.Nblts = int(data_array.shape[0])
         flag_array = tb.getcol('FLAG')
         # CASA stores data in complex array with dimension NbltsxNfreqsxNpols
@@ -176,7 +176,7 @@ class MS_jon(UVData):
         # CASA's convention is unclear: the docs contradict themselves,
         # but empirically it appears to match uvfits
         # So conjugate the visibilities and flip the uvws:
-        self.uvw_array = -1 * tb.getcol('UVW')
+        self.uvw_array = tb.getcol('UVW')
         self.ant_1_array = tb.getcol('ANTENNA1').astype(np.int32)
         self.ant_2_array = tb.getcol('ANTENNA2').astype(np.int32)
         self.Nants_data = len(np.unique(np.concatenate(

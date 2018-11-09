@@ -21,6 +21,7 @@ dirty = np.asarray(sio.loadmat("/home/jon/Desktop/export_mat/dirty.mat")["dirty"
 #dim= (1024,1024)
 p_shaped = np.reshape( (1/4.0)*p, (p.shape[0]*p.shape[1]))
 dim= (256,256)
+
 plan = NFFT(dim, y.size)
 
 plan.x = p_shaped
