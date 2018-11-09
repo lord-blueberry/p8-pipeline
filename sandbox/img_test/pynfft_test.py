@@ -31,6 +31,6 @@ plan.x = uv.flatten()
 plan.precompute()
 
 plan.f = ms.data_array[:,:,0,0]
-res = plan.adjoint() / uv.shape[0]
-plt.imshow(np.flipud(np.transpose(np.real(res))))
+dirty = plan.adjoint() / uv.shape[0]
+plt.imshow(np.flipud(np.transpose(np.real(dirty))))
 
