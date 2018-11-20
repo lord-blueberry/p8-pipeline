@@ -1,0 +1,7 @@
+
+commands meqtrees
+	meqbrowser.py
+	meqserver
+
+cattery folder
+	/usr/lib/python2.7/dist-packages/Cattery/Siamese/
