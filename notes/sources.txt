@@ -43,6 +43,9 @@ https://arxiv.org/pdf/1302.0327.pdf										all-sky interferometry with spheric
 https://arxiv.org/pdf/1504.04485.pdf									Imaging on a Sphere with Interferometers: the Spherical Wave Harmonic Transform
 https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6006544&tag=1		A Novel Sampling Theorem on the Sphere
 
+https://www.youtube.com/watch?v=hbRTijWZox8&index=2&list=PLGCj8f6sgswntUil8yzohR_qazOfYZCg_ transport equation
+http://research.spa.aalto.fi/projects/sht-lib/sht.html matlab sht intro?
+
 
 
 DYNAMIC RANGE

@@ -1,0 +1,25 @@
+possibilities
+
+Reconstruction spaces
+	Starlets
+	TV
+	Daubechies (Frames)
+
+Data Spaces:
+	Fourier Visibilities
+	Image - Convolution
+	Image - FFT
+	Spherical Harmonics
+	
+	Curved Pixels?
+	
+
+
+Optimization Algorithms
+	Fista
+	CD
+
+	Simplex
+	Gradient
+
+	(Primal-Dual)
