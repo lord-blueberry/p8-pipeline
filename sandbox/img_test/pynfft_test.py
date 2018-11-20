@@ -15,11 +15,11 @@ from scipy import constants
 from mslib import MS_jon
 
 imsize = (256, 256)
-cell = np.asarray([0.5, -0.5]) / 3600.0 # #arcseconds. 
+cell = np.asarray([0.5, -0.5]) / 3600.0 # #arcseconds. revert v axis because it is empirically right. the axes in the ms are not really standardized
 cell = np.radians(cell)
 ms = MS_jon()
 ms.read_ms("simkat64-default.ms")
-#last 4 polarizations are XX, XY, YX and YY
+# 4 polarizations are XX, XY, YX and YY
 #Intensity image should be XX + YY
 
 wavelengths = ms.freq_array[0, 0] / constants.c
@@ -32,5 +32,5 @@ plan.precompute()
 
 plan.f = ms.data_array[:,:,0,0]
 dirty = plan.adjoint() / uv.shape[0]
-plt.imshow(np.flipud(np.transpose(np.real(dirty))))
+plt.imshow(np.flipud(np.transpose(np.real(dirty))))  
 
