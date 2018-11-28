@@ -47,8 +47,10 @@ https://www.youtube.com/watch?v=hbRTijWZox8&index=2&list=PLGCj8f6sgswntUil8yzohR
 http://research.spa.aalto.fi/projects/sht-lib/sht.html matlab sht intro?
 
 
-
 DYNAMIC RANGE
 https://www.aanda.org/articles/aa/pdf/2008/40/aa9104-07.pdf		Pixelization and dynamic range in radio interferometry
 https://link.springer.com/content/pdf/10.1007%2Fs10686-005-9000-7.pdf	THE COTTON-SCHWAB CLEAN AT ULTRA-HIGH DYNAMIC RANGE
 
+
+
+http://myweb.uiowa.edu/pbreheny/7600/s16/notes/2-17.pdf		coordinate descent
