@@ -65,20 +65,21 @@ size = [(1080,1080), (512, 512), (512, 512)]
 cell = np.radians(np.asarray([[0.5, -0.5], [0.5, -0.5], [0.5, -0.5]]) / 3600.0)
 
 
-def run_CD(idx):
-    data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
-    ifft = NFFT(data.imsize, data.uv.shape[0])
-    ifft.x = data.uv.flatten()
-    ifft.precompute()
-    
-    ifft.f = data.vis
-    dirty = ifft.adjoint() / data.vis.size / 2.0
-    write_img(dirty, "dirty_"+bmark[idx])
-    
-    from algorithms.CoordinateDescent import CoordinateDescent as CD
-    cd_alg = CD(data, 2, 0.01)
+#def run_CD(idx):
+idx = 2
+data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
+ifft = NFFT(data.imsize, data.uv.shape[0])
+ifft.x = data.uv.flatten()
+ifft.precompute()
 
-run_CD(2)
+ifft.f = data.vis
+dirty = ifft.adjoint() / data.vis.size / 2.0
+write_img(dirty, "dirty_"+bmark[idx])
+
+from algorithms.CoordinateDescent import CoordinateDescent as CD
+cd_alg = CD(data, 2, 0.01)
+
+#run_CD(2)
 
 
 

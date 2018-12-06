@@ -27,7 +27,7 @@ class nfft_wrapper:
     def ifft(self, vis):
         self.ifft_obj.f = vis
         #needs a copy because it is a reference to the nfft's memory. Another call to ifft() would destroy the data
-        return self.ifft_obj.adjoint().copy()  
+        return np.real(self.ifft_obj.adjoint()).copy()  
     
     def ifft_normalized(self, vis):
         tmp = self.ifft(vis)
