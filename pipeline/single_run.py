@@ -13,8 +13,10 @@ import numpy as np
 import os
 import math
 
+from debug_data.load_debug import load_debug
+
 from InputData import InputData
-from pynfft import NFFT
+from nufftwrapper import nfft_wrapper as nfft
 
 
 def read_all_freq(msfile, data_column, imsize, cell):
@@ -65,23 +67,24 @@ size = [(1080,1080), (512, 512), (512, 512)]
 cell = np.radians(np.asarray([[0.5, -0.5], [0.5, -0.5], [0.5, -0.5]]) / 3600.0)
 
 
-#def run_CD(idx):
-idx = 2
-data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
-ifft = NFFT(data.imsize, data.uv.shape[0])
-ifft.x = data.uv.flatten()
-ifft.precompute()
+def run_CD(idx):
+    data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
+    nuft = nfft(data)
+    write_img(nuft.ifft_normalized(data.vis), bmark[id]+"_dirty")
+    
+    from algorithms.CoordinateDescent import CoordinateDescent as CD
+    cd_alg = CD(data,nuft , 2, 0.01)
+    cd_alg.optimize(data.vis.copy(), 0.3)
+    
+data = load_debug()
 
-ifft.f = data.vis
-dirty = ifft.adjoint() / data.vis.size / 2.0
-write_img(dirty, "dirty_"+bmark[idx])
-
+nuft = nfft(data)
 from algorithms.CoordinateDescent import CoordinateDescent as CD
-cd_alg = CD(data, 2, 0.01)
+cd_alg = CD(data, nuft, 2)
+_, starlets = cd_alg.optimize(data.vis.copy(), 0.02)
+plt.imshow(np.reshape(starlets.sum(axis=0), (64,64)))
+#_, starlets = cd_alg.debug_run(data.vis.copy(), 0.0)
+#plt.imshow(np.reshape(starlets, data.imsize))
 
-#run_CD(2)
-
-
-
-
-
+#transform = cd_alg.transform(data.vis, 0, 0.0)
+#plt.imshow(transform)
