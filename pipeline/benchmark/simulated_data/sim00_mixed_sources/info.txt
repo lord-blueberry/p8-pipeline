@@ -1,0 +1,6 @@
+imsize_pix 1080
+cell_arcsec 0.5
+ms_column corrected
+
+pointsources 16
+gaussians 3

@@ -1,0 +1,8 @@
+imsize_pix 512
+cell_arcsec 0.5
+ms_column corrected
+
+pointsources 2
+gaussians 0
+
+comment "Two point sources located ad discrete pixels"
