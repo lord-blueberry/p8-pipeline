@@ -1,5 +1,6 @@
 #simulation specific files
 skymodel.png
+pipeline/img_output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
