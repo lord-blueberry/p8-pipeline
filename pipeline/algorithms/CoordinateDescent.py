@@ -131,12 +131,51 @@ class CoordinateDescent:
             x_starlets[J] = x
             print("descent starlet ", J, " ", _magnitude(vis_residual))
         
+        self.tmp_residuals = vis_residual
+        self.tmp_starlets = x_starlets
+        self.tmp_active = active_sets
         return vis_residual, x_starlets
 
 
 
 
 #debugging function
+
+    def rerun_approx(self, lambda_cs):
+        vis_residual = self.tmp_residuals
+        vis_residual, x_starlets_approx = self._nfft_approximation(vis_residual, lambda_cs)
+        
+        x_starlets = self.tmp_starlets + x_starlets_approx
+        
+        self.tmp_residuals = vis_residual
+        self.tmp_starlets = x_starlets
+        self.tmp_active = x_starlets_approx.copy()
+        return np.reshape(x_starlets.sum(axis=0), self.data.imsize)
+        
+
+    def rerun_inner_cd(self, lambda_cs):
+        vis_residual = self.tmp_residuals
+        x_starlets = self.tmp_starlets
+        active_sets = self.tmp_active
+        
+        uv = -2j * np.pi * self.data.uv
+        for J in range(0, self.starlet_levels + 1):
+            print("descent starlet ", J)
+            active_set = active_sets[J]
+            starlet = self.fourier_starlet_base[J]
+            x = x_starlets[J]
+            vis_residual, x = CoordinateDescent._CD(self.data.imsize, uv, lambda_cs, active_set, starlet, vis_residual, x)
+            x_starlets[J] = x
+            print("descent starlet ", J, " ", _magnitude(vis_residual))
+        
+        self.tmp_residuals = vis_residual
+        self.tmp_starlets = x_starlets
+        self.tmp_active = active_sets
+        
+        return np.reshape(x_starlets.sum(axis=0), self.data.imsize)
+        
+
+
         
     def descent_starlets(self, uv, lambda_cs, active_sets, vis_residual, x_starlets):
         for J in range(0, self.starlet_levels + 1):

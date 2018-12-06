@@ -11,7 +11,7 @@ import numpy as np
 
 class nfft_wrapper:
     def __init__(self, data):
-        self.normFactor = data.vis.size * 2.0 #SORT OF normalization. Weights are currently ignored.
+        self.normFactor = data.vis.size #SORT OF normalization. Weights are currently ignored.
         
         #create two pynfft objects, one for fft and one for ifft.
         #in theory one object should suffice, but the implementation tends to crash
