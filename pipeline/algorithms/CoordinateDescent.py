@@ -8,6 +8,7 @@ Created on Wed Dec  5 14:01:58 2018
 
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 def _shrink(x, lambda_cs):
     out = np.sign(x) * np.maximum(np.abs(x) - lambda_cs, 0.)
@@ -238,15 +239,13 @@ class CoordinateDescent:
     def optimize_cache(self, lambda_cs, vis_residual, x_starlet_init):
         vis_residual_approx, x_starlets = self._nfft_approximation(vis_residual, lambda_cs)
         active_sets = x_starlets.copy()
-        single_active = active_sets.sum(axis=0)
         print("after approx ", _magnitude(vis_residual))
         x_starlets = x_starlet_init + x_starlets
         
         caches = []
         uv = -2j * np.pi * self.data.uv
         for J in range(0, self.starlet_levels + 1):
-            #active_set = active_sets[J]
-            active_set = single_active
+            active_set = active_sets[J]
             starlet = self.fourier_starlet_base[J]
             x = x_starlets[J]
             vis_residual_approx, x, cache = CoordinateDescent._CD_cache(self.data.imsize, uv, lambda_cs, active_set, starlet, vis_residual_approx, x)
@@ -259,7 +258,6 @@ class CoordinateDescent:
         print("accurate residuals ", _magnitude(self.tmp_residuals))
         self.tmp_starlets = x_starlets
         self.tmp_active = active_sets
-        self.tmp_single_active = single_active
         self.tmp_caches = caches
         return vis_residual, x_starlets
     
@@ -283,8 +281,7 @@ class CoordinateDescent:
             
 
 
-    def calc_residual_img(self, lambda_cs):
-        vis_residual = self.tmp_residuals
+    def calc_residual_img(self, lambda_cs, vis_residual):
         vis_residual, x_starlets_approx = self._nfft_approximation(vis_residual, lambda_cs)
         
         return np.reshape(x_starlets_approx.sum(axis=0), self.data.imsize)
@@ -330,14 +327,12 @@ class CoordinateDescent:
         vis_residual = self.tmp_residuals
         x_starlets = self.tmp_starlets
         active_sets = self.tmp_active
-        single_active = self.tmp_single_active
         caches = self.tmp_caches
         
         for J in range(0, self.starlet_levels + 1):
             print("descent starlet ", J)
             cache = caches[J]
-            #active_set = active_sets[J]
-            active_set=single_active
+            active_set = active_sets[J]
             x = x_starlets[J]
             vis_residual, x = CoordinateDescent._CD_cached(self.data.imsize, lambda_cs, active_set, cache, vis_residual, x)
             x_starlets[J] = x
@@ -356,17 +351,37 @@ class CoordinateDescent:
 
 
 
+    def optimiz_single(self, lambda_cs, starlet_lvl, vis_residual, x_starlet_init):
+        vis_residual_approx, x_starlets_approx = self._nfft_approximation(vis_residual, lambda_cs)
+        x_starlet_init = x_starlet_init[starlet_lvl]
+        x_starlets_approx = x_starlets_approx[starlet_lvl]
+        starlet = self.fourier_starlet_base[starlet_lvl]
+        
+        active_set = x_starlets_approx.copy()
+        x_starlets_approx += x_starlet_init
+        
+        uv = -2j * np.pi * self.data.uv
+        vis_residual_approx, x_starlets_approx, cache = CoordinateDescent._CD_cache(self.data.imsize, uv, lambda_cs, active_set, starlet, vis_residual_approx, x_starlets_approx)
+        
+        x = x_starlets_approx - x_starlet_init[starlet_lvl]
+        x_img = np.reshape(x, self.data.imsize)
+        active_set_img = np.reshape(active_set, self.data.imsize)
+        
+        cache_idx = 0
+        for xi in range(0, x_img.shape[0]):
+            for yi in range(0, x_img.shape[1]):
+                if active_set_img[xi, yi] > 0.0:                        
+                    f_col = cache[cache_idx]
+                    cache_idx += 1
+                    vis_residual = vis_residual - f_col*x_img[xi,yi]
+        print("accurate residuals ", _magnitude(vis_residual))
+        return vis_residual, active_set, cache, x_starlets_approx + x_starlet_init
 
 
-
-
-
-
-
-
-
-
-
+    def rerun_single(self, lambda_cs, active_set, cache, vis_residual, x_starlet):
+        vis_residual, x_starlet = CoordinateDescent._CD_cached(self.data.imsize, lambda_cs, active_set, cache, vis_residual, x_starlet)
+        print("descent starlet ", _magnitude(vis_residual))
+        return vis_residual, x_starlet
 
 
 

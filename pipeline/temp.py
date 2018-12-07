@@ -22,22 +22,51 @@ def dump_starlets(starlets, name):
     for i in range(0, starlets.shape[0]):
         write_img(starlets[i].reshape(data.imsize), name+str(i))
         
-def dump_starlets(starlets, name):
+def dump_starlets_weird(starlets, name):
     reg = 0.01
     for i in range(0, starlets.shape[0]):
         write_img(shrink(starlets[i], reg).reshape(data.imsize), name+str(i))
         reg = reg * 10
 
-_, starlets = cd_alg._nfft_approximation(data.vis, 1.0)
-write_img(starlet_img(starlets), bmark[idx]+"_approx")
-dump_starlets(starlets, "1_")
+starlet_lvl = 2
+lamb = 5.0
+_, starlets = cd_alg._nfft_approximation(data.vis, lamb)
+write_img(starlets[starlet_lvl].reshape(data.imsize), bmark[idx]+"_approx")
 
 starlets_zero = cd_alg.init_zero_starlets()
-residuals, starlets = cd_alg.optimize_cache(6000.0, data.vis.copy(), starlets_zero)
+vis_residual, active_set, cache, x_starlet = cd_alg.optimiz_single(lamb, starlet_lvl, data.vis.copy(), starlets_zero)
 
-for i in range(0, 2):
-    cd_alg.rerun_inner_cd_cached(500.0 )
+vis_residual, x_starlet = cd_alg.rerun_single(1000.00, active_set, cache, vis_residual, x_starlet)
+vis_residual, x_starlet = cd_alg.rerun_single(1.00, active_set, cache, vis_residual, x_starlet)
+for i in range(0, 10):
+    vis_residual, x_starlet = cd_alg.rerun_single(1.0, active_set, cache, vis_residual, x_starlet)
     
+write_img(x_starlet.reshape(data.imsize), bmark[idx]+"_run1")
+img = x_starlet.reshape(data.imsize)
+print(np.max(img))
+print(img[256,219])
+
+
+    
+lamb = 1.0
+_, starlets = cd_alg._nfft_approximation(vis_residual, lamb)
+write_img(starlets[starlet_lvl].reshape(data.imsize), bmark[idx]+"_approx2")
+starlets_zero[starlet_lvl] = x_starlet
+vis_residual, active_set, cache, x_starlet = cd_alg.optimiz_single(lamb, starlet_lvl, vis_residual, starlets_zero)
+vis_residual, x_starlet = cd_alg.rerun_single(1000.00, active_set, cache, vis_residual, x_starlet)
+vis_residual, x_starlet = cd_alg.rerun_single(100.00, active_set, cache, vis_residual, x_starlet)
+vis_residual, x_starlet = cd_alg.rerun_single(10.00, active_set, cache, vis_residual, x_starlet)
+vis_residual, x_starlet = cd_alg.rerun_single(1.00, active_set, cache, vis_residual, x_starlet)
+vis_residual, x_starlet = cd_alg.rerun_single(0.1, active_set, cache, vis_residual, x_starlet)
+vis_residual, x_starlet = cd_alg.rerun_single(0.01, active_set, cache, vis_residual, x_starlet)
+vis_residual, x_starlet = cd_alg.rerun_single(0.005, active_set, cache, vis_residual, x_starlet)
+vis_residual, x_starlet = cd_alg.rerun_single(0.005, active_set, cache, vis_residual, x_starlet)
+
+write_img(x_starlet.reshape(data.imsize), bmark[idx]+"_run2")
+
+for i in range(0, 10):
+    vis_residual, x_starlet = cd_alg.rerun_single(0.005, active_set, cache, vis_residual, x_starlet)
+
 for i in range(0, 2):
     cd_alg.rerun_inner_cd_cached(250.0 )
 
@@ -50,28 +79,8 @@ for i in range(0, 2):
 img = cd_alg.rerun_inner_cd_cached(20.0)
 write_img(img, bmark[idx]+"step_1")
 
-write_img(cd_alg.calc_residual_img(0.0), bmark[idx]+"residual")
+write_img(cd_alg.calc_residual_img(0.0, vis_residual), bmark[idx]+"residual")
 
-
-
-residuals, starlets = cd_alg.optimize_cache(3000.0, cd_alg.tmp_residuals, cd_alg.tmp_starlets)
-for i in range(0, 2):
-    cd_alg.rerun_inner_cd_cached(500.0 )
-    
-for i in range(0, 2):
-    cd_alg.rerun_inner_cd_cached(250.0 )
-
-for i in range(0, 2):
-    cd_alg.rerun_inner_cd_cached(100.0)
-
-for i in range(0, 2):
-     cd_alg.rerun_inner_cd_cached(50.0)
-
-img = cd_alg.rerun_inner_cd_cached(20.0)
-write_img(img, bmark[idx]+"step_2")
-
-    img = cd_alg.rerun_inner_cd_cached(2.0)
-write_img(img, bmark[idx]+"_runX")
 
 
 

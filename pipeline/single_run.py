@@ -63,7 +63,7 @@ def write_img(image, name):
 prefix= "./benchmark/simulated_data/"
 bmark = ["sim00_mixed_sources", "sim01_point", "sim02_point"]
 column = ["CORRECTED_DATA","CORRECTED_DATA", "DATA" ]
-size = [(1080,1080), (256, 256), (256, 256)]
+size = [(1080,1080), (512, 512), (256, 256)]
 cell = np.radians(np.asarray([[0.5, -0.5], [0.5, -0.5], [0.5, -0.5]]) / 3600.0)
 
 
