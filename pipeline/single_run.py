@@ -85,20 +85,42 @@ def run_CD(idx):
     from algorithms.CoordinateDescent import CoordinateDescent as CD
     cd_alg = CD(data,nuft , 4)
     
-    _, starlets = cd_alg._nfft_approximation(data.vis, 4.0)
+    
+    _, starlets = cd_alg._nfft_approximation(data.vis, 5.0)
     img = starlets.sum(axis=0).reshape(data.imsize)
     write_img(img, bmark[idx]+"_approx")
     
-    img = starlets[4].reshape(data.imsize)
-    write_img(img, bmark[idx]+"_approx")
-    
-    residuals, starlets = cd_alg.optimize(data.vis.copy(), 4.0)
+    starlets_zero = cd_alg.init_zero_starlets()
+    residuals, starlets = cd_alg.optimize_cache(5.0, data.vis.copy(), starlets_zero)
     img = starlets.sum(axis=0).reshape(data.imsize)
     write_img(img, bmark[idx]+"_run1")
     
-    img = cd_alg.rerun_inner_cd_cached(residuals, 4.0)
+    img = None
+    for i in range(0, 5):
+        img = cd_alg.rerun_inner_cd_cached(5.0)
+    write_img(img, bmark[idx]+"_runX")
+    
+    img = None
+    for i in range(0, 5):
+        img = cd_alg.rerun_inner_cd_cached(2.5)
+    write_img(img, bmark[idx]+"_runX")
+    
+    
+    residuals, starlets = cd_alg.optimize_cache(2.0, cd_alg.tmp_residuals, cd_alg.tmp_starlets)
     img = starlets.sum(axis=0).reshape(data.imsize)
     write_img(img, bmark[idx]+"_run2")
+    
+    img = None
+    for i in range(0, 5):
+        img = cd_alg.rerun_inner_cd_cached(2.0)
+    write_img(img, bmark[idx]+"_runX")
+    
+    
+    
+    active = cd_alg.tmp_active.sum(axis=0).reshape(data.imsize)
+    write_img(active, "active")
+    active[active > 0] = 1
+    write_img(active, "active_1")
 
     
     
