@@ -63,8 +63,9 @@ def write_img(image, name):
 prefix= "./benchmark/simulated_data/"
 bmark = ["sim00_mixed_sources", "sim01_point", "sim02_point"]
 column = ["CORRECTED_DATA","CORRECTED_DATA", "DATA" ]
-size = [(1080,1080), (512, 512), (256, 256)]
+size = [(1080,1080), (256, 256), (256, 256)]
 cell = np.radians(np.asarray([[0.5, -0.5], [0.5, -0.5], [0.5, -0.5]]) / 3600.0)
+
 
 
 def run_debug():
@@ -77,27 +78,27 @@ def run_debug():
     plt.imshow(np.reshape(starlets.sum(axis=0), (64,64)))
 
 def run_CD(idx):
-data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
-nuft = nfft(data)
-write_img(nuft.ifft_normalized(data.vis), bmark[idx]+"_dirty")
-
-from algorithms.CoordinateDescent import CoordinateDescent as CD
-cd_alg = CD(data,nuft , 4)
-
-_, starlets = cd_alg._nfft_approximation(data.vis, 4.0)
-img = starlets.sum(axis=0).reshape(data.imsize)
-write_img(img, bmark[idx]+"_approx")
-
-img = starlets[4].reshape(data.imsize)
-write_img(img, bmark[idx]+"_approx")
-
-residuals, starlets = cd_alg.optimize(data.vis.copy(), 4.0)
-img = starlets.sum(axis=0).reshape(data.imsize)
-write_img(img, bmark[idx]+"_run1")
-
-residuals, starlets = cd_alg.optimize(residuals, 1.0)
-img = starlets.sum(axis=0).reshape(data.imsize)
-write_img(img, bmark[idx]+"_run2")
+    data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
+    nuft = nfft(data)
+    write_img(nuft.ifft_normalized(data.vis), bmark[idx]+"_dirty")
+    
+    from algorithms.CoordinateDescent import CoordinateDescent as CD
+    cd_alg = CD(data,nuft , 4)
+    
+    _, starlets = cd_alg._nfft_approximation(data.vis, 4.0)
+    img = starlets.sum(axis=0).reshape(data.imsize)
+    write_img(img, bmark[idx]+"_approx")
+    
+    img = starlets[4].reshape(data.imsize)
+    write_img(img, bmark[idx]+"_approx")
+    
+    residuals, starlets = cd_alg.optimize(data.vis.copy(), 4.0)
+    img = starlets.sum(axis=0).reshape(data.imsize)
+    write_img(img, bmark[idx]+"_run1")
+    
+    img = cd_alg.rerun_inner_cd_cached(residuals, 4.0)
+    img = starlets.sum(axis=0).reshape(data.imsize)
+    write_img(img, bmark[idx]+"_run2")
 
     
     
