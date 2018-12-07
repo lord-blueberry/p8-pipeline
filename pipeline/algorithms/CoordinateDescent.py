@@ -14,7 +14,7 @@ def _shrink(x, lambda_cs):
     return np.maximum(out, 0.)
 
 def _magnitude(vis):
-    return np.mean(np.square(np.real(vis))+np.square(np.imag(vis)))
+    return np.sum(np.square(np.real(vis))+np.square(np.imag(vis)))
 
 class CoordinateDescent:
     
@@ -192,10 +192,11 @@ class CoordinateDescent:
     
     
 
-    def optimize(self, vis, lambda_cs):
+    def optimize(self, lambda_cs, vis, x_starlet_init):
         vis_residual, x_starlets = self._nfft_approximation(vis, lambda_cs)
-        print("after approx ", _magnitude(vis_residual))
         active_sets = x_starlets.copy()
+        print("after approx ", _magnitude(vis_residual))
+        x_starlets = x_starlet_init + x_starlets
         
         uv = -2j * np.pi * self.data.uv
         for J in range(0, self.starlet_levels + 1):
@@ -207,10 +208,30 @@ class CoordinateDescent:
             x_starlets[J] = x
             print("descent starlet ", J, " ", _magnitude(vis_residual))
         
-        self.tmp_residuals = vis_residual
+        self.tmp_residuals = self.calc_accurate_residual_slow(self.data.imsize, active_sets, uv, starlets, vis_residual, x_starlets - x_starlet_init)
+        print("accurate residuals ", _magnitude(self.tmp_residuals))
         self.tmp_starlets = x_starlets
         self.tmp_active = active_sets
         return vis_residual, x_starlets
+    
+    def calc_accurate_residual_slow(self, dimensions, active_sets, uv, starlets, vis, x_starlets):
+        vis_residual = vis
+        for J in range(0, self.starlet_levels + 1):
+            active_set = active_sets[J]
+            starlet = starlets[J]
+            x = x_starlets[J]
+            x_img = np.reshape(x, self.data.imsize)
+            active_set_img = np.reshape(active_set, self.data.imsize)
+            center_pixel = math.floor(dimensions[0] / 2.0)
+            
+            for xi in range(0, x_img.shape[0]):
+                for yi in range(0, x_img.shape[1]):
+                    if active_set_img[xi, yi] > 0.0:                        
+                        uv_prod = np.dot(uv, np.asarray([xi - center_pixel, yi - center_pixel]))
+                    
+                        f_col = starlet * np.exp(uv_prod)
+                        vis_residual = vis_residual - f_col*x_img[xi,yi]
+        return vis_residual
     
     
     def optimize_cache(self, lambda_cs, vis_residual, x_starlet_init):
@@ -218,8 +239,6 @@ class CoordinateDescent:
         active_sets = x_starlets.copy()
         print("after approx ", _magnitude(vis_residual))
         x_starlets = x_starlet_init + x_starlets
-        
-        
         
         caches = []
         uv = -2j * np.pi * self.data.uv
@@ -240,7 +259,6 @@ class CoordinateDescent:
         self.tmp_caches = caches
         return vis_residual, x_starlets
     
-    
     def calc_accurate_residual(self, dimensions, active_sets, caches, vis, x_starlets):
         vis_residual = vis
         for J in range(0, self.starlet_levels + 1):
@@ -255,6 +273,7 @@ class CoordinateDescent:
                 for yi in range(0, x_img.shape[1]):
                     if active_set_img[xi, yi] > 0.0:                        
                         f_col = cache[cache_idx]
+                        cache_idx += 1
                         vis_residual = vis_residual - f_col*x_img[xi,yi]
         return vis_residual
             
