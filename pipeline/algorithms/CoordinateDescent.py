@@ -48,22 +48,21 @@ class CoordinateDescent:
         
         four_base = np.zeros((starlet_levels+1, data.vis.size), dtype=np.complex128)
         tmp = np.zeros(data.imsize)
-        sum_total = np.zeros(data.vis.size, dtype=np.complex128)
         last_conv_mat = None
         for J in range(0, starlet_levels):
             new_mat = nfft.fft(insert_spaced(tmp.copy(), bspline, J))
             if last_conv_mat is None:
+                four_base[J] = (1 - new_mat)
                 last_conv_mat = new_mat
             else:
-                last_conv_mat = last_conv_mat * new_mat
-
-            #(1- conv_mat) arises from the multi-scale wavelet analysis
-            #w_J = c_(J-1) - conv_mat_J *c_(J-1)
-            four_base[J] = (1 - last_conv_mat)
-            sum_total += (1 - last_conv_mat)
+                #(conv_mat[J-1]- conv_mat[J]) arises from the multi-scale wavelet analysis
+                #w_J = c_(J-1) - conv_mat_J *c_(J-1)
+                new_mat = last_conv_mat * new_mat
+                four_base[J] = (last_conv_mat - new_mat)
+                last_conv_mat = new_mat
             
         #add cJ as last
-        four_base[starlet_levels] = sum_total + last_conv_mat
+        four_base[starlet_levels] = last_conv_mat
         return four_base
      
     def init_zero_starlets(self):
@@ -234,16 +233,20 @@ class CoordinateDescent:
         return vis_residual
     
     
+    
+    
     def optimize_cache(self, lambda_cs, vis_residual, x_starlet_init):
         vis_residual_approx, x_starlets = self._nfft_approximation(vis_residual, lambda_cs)
         active_sets = x_starlets.copy()
+        single_active = active_sets.sum(axis=0)
         print("after approx ", _magnitude(vis_residual))
         x_starlets = x_starlet_init + x_starlets
         
         caches = []
         uv = -2j * np.pi * self.data.uv
         for J in range(0, self.starlet_levels + 1):
-            active_set = active_sets[J]
+            #active_set = active_sets[J]
+            active_set = single_active
             starlet = self.fourier_starlet_base[J]
             x = x_starlets[J]
             vis_residual_approx, x, cache = CoordinateDescent._CD_cache(self.data.imsize, uv, lambda_cs, active_set, starlet, vis_residual_approx, x)
@@ -256,6 +259,7 @@ class CoordinateDescent:
         print("accurate residuals ", _magnitude(self.tmp_residuals))
         self.tmp_starlets = x_starlets
         self.tmp_active = active_sets
+        self.tmp_single_active = single_active
         self.tmp_caches = caches
         return vis_residual, x_starlets
     
@@ -326,13 +330,14 @@ class CoordinateDescent:
         vis_residual = self.tmp_residuals
         x_starlets = self.tmp_starlets
         active_sets = self.tmp_active
+        single_active = self.tmp_single_active
         caches = self.tmp_caches
         
         for J in range(0, self.starlet_levels + 1):
             print("descent starlet ", J)
             cache = caches[J]
-            active_set = active_sets[J]
-            starlet = self.fourier_starlet_base[J]
+            #active_set = active_sets[J]
+            active_set=single_active
             x = x_starlets[J]
             vis_residual, x = CoordinateDescent._CD_cached(self.data.imsize, lambda_cs, active_set, cache, vis_residual, x)
             x_starlets[J] = x
