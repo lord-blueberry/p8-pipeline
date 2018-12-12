@@ -50,10 +50,11 @@ def CoordinateDescent_slow(lambda_cs, dimensions, active_set, uv, res, x):
 def CoordinateDescent1(lambda_cs, active_set, cache, res, x):
     res_out = res
     cache_idx = 0
+    x_out = x
     for xi in range(0, x.shape[0]):
         for yi in range(0, x.shape[1]):
             if(active_set[xi, yi] > 0.0):
-                x_old = x[xi, yi]
+                x_old = x_out[xi, yi]
                 
                 f_col = cache[cache_idx]
                 cache_idx += 1
@@ -68,11 +69,11 @@ def CoordinateDescent1(lambda_cs, active_set, cache, res, x):
                 x_new = b / a # this times -2, it cancels out the -1/2 of the original equation
   
                 x_new = _shrink(x_new + x_old, lambda_cs)
-                x[xi, yi] = x_new
+                x_out[xi, yi] = x_new
                 diff = x_new - x_old
                 diff_res = f_col*diff
                 res_out = res_out - diff_res
-    return res_out, x
+    return res_out, x_out
 
 
 def CoordinateDescent2(lambda_cs, active_set, cache, res, x):
@@ -126,7 +127,7 @@ def fourier_starlets(nfft, data, starlet_levels):
         tmp = np.zeros(data.imsize)
         last_conv_mat = None
         for J in range(0, starlet_levels):
-            new_mat = nfft.fft(insert_spaced(tmp.copy(), bspline, J))
+            new_mat = nfft.fft(insert_spaced(tmp.copy(), bspline, J)) / data.vis.size
             if last_conv_mat is None:
                 four_base[J] = (1 - new_mat)
                 last_conv_mat = new_mat
