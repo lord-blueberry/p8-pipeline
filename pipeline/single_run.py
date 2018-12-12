@@ -84,6 +84,86 @@ def run_CD(idx):
     
     from algorithms.CoordinateDescent import CoordinateDescent as CD
     cd_alg = CD(data,nuft , 4)
+    
+def run_CD2():
+    idx=1
+    data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
+    #data = load_debug()
+    nuft = nfft(data)
+    write_img(nuft.ifft_normalized(data.vis), bmark[idx]+"_dirty")
+    
+    from algorithms.CoordinateDescent2 import CoordinateDescent1 as CD
+    from algorithms.CoordinateDescent2 import calc_cache 
+    from algorithms.CoordinateDescent2 import _magnitude
+    
+    
+    def starlet_img(starlets):
+        return starlets.sum(axis=0).reshape(data.imsize)
+    
+    def dump_starlets(starlets, name):
+        for i in range(0, starlets.shape[0]):
+            write_img(starlets[i].reshape(data.imsize), name+str(i))
+            
+    def dump_starlets_weird(starlets, name):
+        reg = 0.01
+        for i in range(0, starlets.shape[0]):
+            write_img(shrink(starlets[i], reg).reshape(data.imsize), name+str(i))
+            reg = reg * 10
+    
+    lambda_cs = 0.5
+    active_set = np.zeros(data.imsize)
+    #active_set[22:42, 22:42] = 1
+    active_set[255:258, 218:221] = 1
+    res = data.vis
+    
+    x = np.zeros(data.imsize)
+    cache = calc_cache(data.uv, data.imsize, active_set, res, x)
+    
+    print(_magnitude(res))
+    res, x = CD(lambda_cs, active_set, cache, res, x)
+    print(_magnitude(res))
+    
+    for i in range(0, 10):
+        res, x = CD(lambda_cs/100.0, active_set, cache, res, x)
+        print(_magnitude(res))
+    write_img(x, "bla")
+    print(np.max(x))
+    print(x[256,219])
+    print(x[255,218])
+    
+    
+    write_img(nuft.ifft_normalized(res), bmark[idx]+"_residual")
+    write_img(active_set, "bla")
+    
+    
+    
+    def printstuff(cache, active_set, res, x):
+        cache_idx = 0
+        for xi in range(0, x.shape[0]):
+            for yi in range(0, x.shape[1]):
+                if(active_set[xi, yi] > 0.0):
+                    if(xi <= 257 and xi >= 255) and (yi <= 220 and yi >= 218):
+                        x_old = x[xi, yi]
+                        
+                        f_col = cache[cache_idx]
+                        cache_idx += 1
+                        f_r = np.real(f_col)
+                        f_i = np.imag(f_col)
+                        res_r = np.real(res)
+                        res_i = np.imag(res)
+        
+                        #calc -b/(2a)
+                        a = np.sum(np.square(f_r) + 2*f_r*f_i + np.square(f_i))
+                        b = np.sum(f_r*res_r + f_r*res_i + f_i*res_r + f_i*res_i) 
+                        x_new = b / a # this times -2, it cancels out the -1/2 of the original equation
+                        
+                        print(x_old, xi, yi)
+                        #print(x_new, xi, yi)
+                    else:
+                        print(xi, yi)
+                        cache_idx += 1
+                        
+    printstuff(cache, active_set, res, x)
 
 
     
