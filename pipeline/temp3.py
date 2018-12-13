@@ -131,19 +131,17 @@ print(_magnitude(residuals))
 
 
 max_full = 1000
-#approx
 for J_main in range(0, starlet_levels+1):
+    #approx
     starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
     active_set, active_lambda = calc_active(starlets[J_main], max_full, lambda_cs)
     print("found active set with ", np.count_nonzero(active_set))
     active_set[active_set > 0.0] = 1
     full_cache_debug = full_cache_debug + active_set
     
-    
+    print("calculated cache")
     cache = calc_cache(data.uv, data.imsize, active_set, data.vis)
     for J in range(0, starlet_levels+1):
-    
-        print("calculated cache")
         res_tmp = residuals * starlet_base[J]
         x = x_starlets[J].copy()
         

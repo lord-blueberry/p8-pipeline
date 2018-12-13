@@ -18,22 +18,14 @@ nonzeros = np.count_nonzero(tmp)
 if nonzeros < max_full and nonzeros >= 10:
     return tmp, current_l
 
-current_l = save_l
-lower_l = current_l / 10.0
-diff = current_l - lower_l
-while (nonzeros > max_full or nonzeros <= 10) and diff > 0.0001:
+diff = current_l - current_l / 10.0
+while (nonzeros > max_full or nonzeros <= 10) and diff > 0.00001:
     diff = diff/2
     if nonzeros > max_full:
         current_l = current_l + diff
-        print("raise lambda", current_l)   
-
     else:
         current_l = current_l - diff
-        print("lower lambda", current_l)
-    
-         
     tmp = _shrink(img, current_l)
     nonzeros = np.count_nonzero(tmp)
-    print("nonzeros", nonzeros)
 
-return tmp, lower_l
+return tmp, current_l
