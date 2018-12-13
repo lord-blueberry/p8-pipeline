@@ -117,13 +117,16 @@ def ago_separate(data, nuft, max_full, starlet_base, equi_base, starlet_levels, 
         for J2 in range(0, starlet_levels+1):
             current_lambda = lambda_cs * (J2+1)
             res_tmp = residuals * starlet_base[J]
-            x = x_starlets[J]
+            x = x_starlets[J].copy()
             
             for i in range(0, 10):
                 res_tmp, x = CD(lambda_cs*(10-i), active_set, cache, res_tmp, x)
+            x_diff = x - x_starlets[J]
             x_starlets[J] = x
-            residuals = res_tmp / starlet_base[J]
-            print(_magnitude(residuals))
+            res_diff = np.zeros(data.vis.shape)
+            res_diff = calc_residual(active_set, cache, res_diff, x_diff)
+            residuals = residuals - (res_diff * starlet_base[J])
+        print(_magnitude(residuals))
     return residuals, x_starlets, active_set, full_cache_debug
 
 

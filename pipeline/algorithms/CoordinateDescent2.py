@@ -190,8 +190,7 @@ def _nfft_approximation(nuft, dimensions, starlet_base, lambda_cs, vis):
     return starlets
 
 
-def calc_residual(active_set, cache, res, x_diff):
-    res_diff = res
+def calc_residual(active_set, cache, res_diff, x_diff):
     cache_idx = 0
     for xi in range(0, x_diff.shape[0]):
         for yi in range(0, x_diff.shape[1]):
