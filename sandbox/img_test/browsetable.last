@@ -1,0 +1,7 @@
+taskname           = "browsetable"
+tablename          =  "simkat64-default.ms"
+mightedit          =  False
+sortlist           =  ""
+taql               =  ""
+skipcols           =  ""
+#browsetable(tablename="simkat64-default.ms",mightedit=False,sortlist="",taql="",skipcols="")

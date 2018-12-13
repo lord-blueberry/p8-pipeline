@@ -29,6 +29,7 @@ from algorithms.CoordinateDescent2 import _magnitude
 from algorithms.CoordinateDescent2 import _shrink
 from algorithms.CoordinateDescent2 import calc_residual
 from algorithms.CoordinateDescent2 import _nfft_approximation
+from algorithms.CoordinateDescent2 import to_image
 
 
 starlet_levels=2
@@ -38,7 +39,7 @@ starlet_levels = 4
 starlet_base = fourier_starlets(nuft, data, starlet_levels)
 equi_base = equi_starlets(data, starlet_levels)
 #active_set[22:42, 22:42] = 1
-active_set[250:262, 250:262] = 1
+#active_set[250:262, 250:262] = 1
 res = data.vis
 
 starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 3000, data.vis)
@@ -100,30 +101,67 @@ write_img(np.abs(starlets_cd[bla] - starlets[bla]), "bla")
 
 
 
+def ago_separate(data, nuft, max_full, starlet_base, equi_base, starlet_levels, lambda_cs, residuals, x_starlets):
+    full_cache_debug = np.zeros(data.imsize)
+    print(_magnitude(residuals))
+    for J in range(0, starlet_levels+1):
+        #approx
+        starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
+        active_set, active_lambda = calc_active(starlets[J], max_full, lambda_cs)
+        print("found active set with ", np.count_nonzero(active_set))
+        active_set[active_set > 0.0] = 1
+        full_cache_debug = full_cache_debug + active_set
+        
+        cache = calc_cache(data.uv, data.imsize, active_set, data.vis)
+        print("calculated cache")
+        for J2 in range(0, starlet_levels+1):
+            current_lambda = lambda_cs * (J2+1)
+            res_tmp = residuals * starlet_base[J]
+            x = x_starlets[J]
+            
+            for i in range(0, 10):
+                res_tmp, x = CD(lambda_cs*(10-i), active_set, cache, res_tmp, x)
+            x_starlets[J] = x
+            residuals = res_tmp / starlet_base[J]
+            print(_magnitude(residuals))
+    return residuals, x_starlets, active_set, full_cache_debug
 
-tmp = np.asarray([1.0 / 16.0, 1.0 / 4.0, 3.0 / 8.0, 1.0 / 4.0, 1.0 / 16.0])
-row = np.asmatrix([tmp])
-bspline =(np.dot(np.transpose(row), row))
 
-tmp = np.zeros(data.imsize, dtype=np.complex128)
-def insert_spaced(mat, kernel, J):
-    disp = 2**J
-    for xi in range(0, kernel.shape[0]):
-        for yi in range(0, kernel.shape[1]):
-            mat[xi * disp, yi * disp] = kernel[xi, yi]
-    roll = -2**(J+1)
-    mat = np.roll(mat, roll, axis=0)
-    mat = np.roll(mat, roll, axis=1)
-    return mat
-new_base = insert_spaced(tmp, bspline, 0)
-bfft = fftnumpy.fft2(new_base)
-write_img(new_base, "bla")
+def calc_active(img, max_full, start_lambda):
+    out = img.copy()
+    current_l = start_lambda
+    tmp = _shrink(img, current_l)
+    while np.count_nonzero(tmp) > max_full:
+        current_l = current_l * 10.0
+        tmp = _shrink(img, current_l)
 
+    nonzeros = np.count_nonzero(tmp)
+    if nonzeros < max_full and nonzeros >= 10:
+        return tmp, current_l
+    
+    lower_l = current_l / 10.0
+    diff = current_l - lower_l
+    while (nonzeros > max_full or nonzeros <= 10) and diff > 0.0001:
+        diff = diff/2
+        if np.count_nonzero(tmp) > max_full:
+            lower_l = lower_l - diff
+        else:
+            lower_l = lower_l + diff
+        tmp = _shrink(img, lower_l)
+        nonzeros = np.count_nonzero(tmp)
+    return tmp, lower_l
 
-
-
-
-
+starlet_levels = 4
+lambda_cs = 0.01
+starlet_base = fourier_starlets(nuft, data, starlet_levels)
+equi_base = equi_starlets(data, starlet_levels)
+x_starlets = np.zeros((starlet_levels+1, data.imsize[0], data.imsize[1]))
+residuals = data.vis
+res2, x_new ,active, full_cache_debug = ago_separate(data, nuft, 1000, starlet_base, equi_base, starlet_levels, lambda_cs, residuals, x_starlets)
+write_img(toImage(x_new), "result")
+bla = full_cache_debug
+bla[bla > 0] = 1
+write_img(bla, "active")
 
 def printstuff(cache, active_set, res, x):
     cache_idx = 0

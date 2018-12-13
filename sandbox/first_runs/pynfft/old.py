@@ -16,7 +16,7 @@ from pynfft import NFFT
 import matplotlib.pyplot as plt
 
 def inverseFT(img, X, u, v):
-    N = img.shape[0]/2
+    N = img.shape[0]//2
     for x in range (-N, N):
         for y in range(-N, N):
             img[x-N, y-N] = img[x-N,y-N] + X * cmath.exp(-2j*math.pi * (u*x + v*y))
@@ -27,14 +27,14 @@ dim = [32,32]
 img = np.zeros(dim, dtype=np.complex128)
 
 #inverseFT(img, 3, 0.05,0.013)
-inverseFT(img, 2.5, 0.038,0.046)
+inverseFT(img, 2.5, 1., 0.000001)
 
 plt.imshow(np.real(img))
 print(img[0,0])
 
 
 
-
+'''
 
 plan = NFFT(dim, 6)
 
@@ -54,3 +54,4 @@ res = infft.f_hat_iter
 
 plt.imshow(np.real(res))
 print(res[0,0])
+'''

@@ -216,17 +216,11 @@ def calc_cache(uv, dimensions, active_set, res):
                 cache_idx += 1
     return cache    
 
-def calc_cache_conv(uv, dimensions, conv, active_set, res, x):
-    uv = -2j * np.pi * uv
-    center_pixel = math.floor(dimensions[0] / 2.0)
-    cache = np.zeros((np.count_nonzero(active_set), res.size), dtype=np.complex128)
-    cache_idx = 0
 
-    for xi in range(0, x.shape[0]):
-        for yi in range(0, x.shape[1]):
-            if(active_set[xi, yi] > 0.0):
-                pix =  np.dot(uv, np.asarray([xi-center_pixel, yi-center_pixel]))
-                f_col = conv * np.exp(pix)
-                cache[cache_idx] = f_col
-                cache_idx += 1
-    return cache    
+def to_image(starlets, equi_base):
+    starlets_convolved = starlets.copy()
+    for J in range(0, len(starlets)):
+        x_fft = fftnumpy.fft2(starlets_convolved[J])
+        res_starlet = np.real(fftnumpy.ifft2(x_fft * equi_base[J]))
+        starlets_convolved[J] = res_starlet
+    return starlets_convolved.sum(axis=0)   
