@@ -86,7 +86,7 @@ def calc_active(img, max_full, start_lambda):
 
 
 
-starlet_levels = 4
+starlet_levels = 7
 lambda_cs = 0.01
 starlet_base = fourier_starlets(nuft, data, starlet_levels)
 equi_base = equi_starlets(data, starlet_levels)
@@ -121,7 +121,7 @@ write_img(nuft.ifft_normalized(residuals), bmark[idx]+"res")
 res2 = data.vis - nuft.fft(toImage(x_starlets))
 write_img(nuft.ifft_normalized(res2), bmark[idx]+"res")
 
-
+starlets2 = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
 
 
 
@@ -132,37 +132,29 @@ print(_magnitude(residuals))
 
 max_full = 1000
 #approx
-J = 0
-
-starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
-active_set, active_lambda = calc_active(starlets[J], max_full, lambda_cs)
-print("found active set with ", np.count_nonzero(active_set))
-active_set[active_set > 0.0] = 1
-full_cache_debug = full_cache_debug + active_set
-
-
-for J in range(0, starlet_levels+1):
-    #approx
+for J_main in range(0, starlet_levels+1):
     starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
-    active_set, active_lambda = calc_active(starlets[J], max_full, lambda_cs)
+    active_set, active_lambda = calc_active(starlets[J_main], max_full, lambda_cs)
     print("found active set with ", np.count_nonzero(active_set))
     active_set[active_set > 0.0] = 1
     full_cache_debug = full_cache_debug + active_set
     
+    
     cache = calc_cache(data.uv, data.imsize, active_set, data.vis)
-    print("calculated cache")
-    for J2 in range(0, starlet_levels+1):
-        res_tmp = residuals * starlet_base[J2]
-        x = x_starlets[J2].copy()
+    for J in range(0, starlet_levels+1):
+    
+        print("calculated cache")
+        res_tmp = residuals * starlet_base[J]
+        x = x_starlets[J].copy()
         
         for i in range(0, 10):
             res_tmp, x = CD(lambda_cs, active_set, cache, res_tmp, x)
-        x_diff = x - x_starlets[J2]
-        x_starlets[J2] = x
+        x_diff = x - x_starlets[J]
+        x_starlets[J] = x
         res_diff = np.zeros(data.vis.shape)
         res_diff = calc_residual(active_set, cache, res_diff, x_diff)
-        residuals = residuals - (res_diff * starlet_base[J2])
-    print(_magnitude(residuals))
+        residuals = residuals + (res_diff * starlet_base[J])
+        print(_magnitude(residuals))
 
 
 write_img(toImage(x_starlets), "result")
