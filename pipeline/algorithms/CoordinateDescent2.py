@@ -248,7 +248,7 @@ def to_image(starlets, equi_base):
     return starlets_convolved.sum(axis=0)
 
 
-def full_algorithmdata(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_starlets):
+def full_algorithm(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_starlets):
     full_cache_debug = np.zeros(data.imsize)
     print(_magnitude(residuals))
     
@@ -274,4 +274,32 @@ def full_algorithmdata(data, nuft, max_full, starlet_base, lambda_cs, residuals,
             res_diff = calc_residual(active_set, cache, res_diff, x_diff)
             residuals = residuals + (res_diff * starlet_base[J])
             print(_magnitude(residuals))
+    return residuals, x_starlets, full_cache_debug
+
+
+def full_algorithm2(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_starlets):
+    full_cache_debug = np.zeros(data.imsize)
+    print(_magnitude(residuals))
+ 
+    for J in range(0, len(starlet_base)):
+        #approx
+        starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
+        active_set, active_lambda = calc_active(starlets[J], max_full, lambda_cs)
+        print("found active set with ", np.count_nonzero(active_set))
+        active_set[active_set > 0.0] = 1
+        full_cache_debug = full_cache_debug + active_set
+        
+        print("calculated cache")
+        cache = calc_cache(data.uv, data.imsize, active_set, data.vis)
+        res_tmp = residuals * starlet_base[J]
+        x = x_starlets[J].copy()
+        
+        for i in range(0, 10):
+            res_tmp, x = CoordinateDescent1(lambda_cs, active_set, cache, res_tmp, x)
+        x_diff = x - x_starlets[J]
+        x_starlets[J] = x
+        res_diff = np.zeros(data.vis.shape)
+        res_diff = calc_residual(active_set, cache, res_diff, x_diff)
+        residuals = residuals + (res_diff * starlet_base[J])
+        print(_magnitude(residuals))
     return residuals, x_starlets, full_cache_debug

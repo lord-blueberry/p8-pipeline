@@ -120,6 +120,7 @@ write_img(x_new[3], "bla")
 write_img(nuft.ifft_normalized(residuals), bmark[idx]+"res")
 res2 = data.vis - nuft.fft(toImage(x_starlets))
 write_img(nuft.ifft_normalized(res2), bmark[idx]+"res")
+write_img(x_starlets[6], bmark[idx]+"res")
 
 starlets2 = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
 
