@@ -177,25 +177,34 @@ def run_CD_starlet(idx):
     from algorithms.CoordinateDescent2 import to_image
     from algorithms.CoordinateDescent2 import fourier_starlets
     from algorithms.CoordinateDescent2 import equi_starlets
+    from algorithms.CoordinateDescent2 import _nfft_approximation
+    
     
     starlet_levels = 7
     lambda_cs = 0.01
     starlet_base = fourier_starlets(nuft, data, starlet_levels)
+    starlets = _nfft_approximation(nuft, data.imsize,starlet_base, 0.0, data.vis)
+    write_img(starlets[0], "starlets0")
+    
     equi_base = equi_starlets(data, starlet_levels)
     x_starlets = np.zeros((starlet_levels+1, data.imsize[0], data.imsize[1]))
     residuals = data.vis
     residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
-    
+    debug = full_cache_debug
     write_img(nuft.ifft_normalized(residuals), "res")
     write_img(to_image(x_starlets, equi_base), "image")
+    
     residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
     write_img(nuft.ifft_normalized(residuals), "res2")
     write_img(to_image(x_starlets, equi_base), "image2")
+    debug += full_cache_debug
     residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
     write_img(nuft.ifft_normalized(residuals), "res3")
     write_img(to_image(x_starlets, equi_base), "image3")
+    debug += full_cache_debug
     residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
     write_img(nuft.ifft_normalized(residuals), "res4")
     write_img(to_image(x_starlets, equi_base), "image4")
-
+    debug += full_cache_debug
+    write_img(debug, "full_cache_debug")
 run_CD_starlet(0)
