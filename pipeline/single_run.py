@@ -63,7 +63,7 @@ def write_img(image, name):
 prefix= "./benchmark/simulated_data/"
 bmark = ["sim00_mixed_sources", "sim01_point", "sim02_point"]
 column = ["CORRECTED_DATA","CORRECTED_DATA", "DATA" ]
-size = [(1080,1080), (512, 512), (256, 256)]
+size = [(1080,1080), (256, 256), (256, 256)]
 cell = np.radians(np.asarray([[0.5, -0.5], [0.5, -0.5], [0.5, -0.5]]) / 3600.0)
 
 
@@ -179,32 +179,30 @@ def run_CD_starlet(idx):
     from algorithms.CoordinateDescent2 import equi_starlets
     from algorithms.CoordinateDescent2 import _nfft_approximation
     
+    prefix_csv="./img_output/"
     
-    starlet_levels = 7
-    lambda_cs = 0.01
+    starlet_levels = 3
+    lambda_cs = 0.1
     starlet_base = fourier_starlets(nuft, data, starlet_levels)
     starlets = _nfft_approximation(nuft, data.imsize,starlet_base, 0.0, data.vis)
     write_img(starlets[0], "starlets0")
+    np.savetxt(prefix_csv+"starlets0", starlets[0], delimiter=",")
     
     equi_base = equi_starlets(data, starlet_levels)
     x_starlets = np.zeros((starlet_levels+1, data.imsize[0], data.imsize[1]))
     residuals = data.vis
-    residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
-    debug = full_cache_debug
-    write_img(nuft.ifft_normalized(residuals), "res")
-    write_img(to_image(x_starlets, equi_base), "image")
     
-    residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
-    write_img(nuft.ifft_normalized(residuals), "res2")
-    write_img(to_image(x_starlets, equi_base), "image2")
-    debug += full_cache_debug
-    residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
-    write_img(nuft.ifft_normalized(residuals), "res3")
-    write_img(to_image(x_starlets, equi_base), "image3")
-    debug += full_cache_debug
-    residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
-    write_img(nuft.ifft_normalized(residuals), "res4")
-    write_img(to_image(x_starlets, equi_base), "image4")
-    debug += full_cache_debug
+    debug = np.zeros(data.imsize)
+    for i in range(0,4):
+        residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
+        debug += full_cache_debug
+        reconstruction = to_image(x_starlets, equi_base)
+        write_img(nuft.ifft_normalized(residuals), "res"+str(i))
+        write_img(reconstruction, "image"+str(i))
+        np.savetxt(prefix_csv+"image"+str(i), reconstruction, delimiter=",")
+     
     write_img(debug, "full_cache_debug")
-run_CD_starlet(0)
+    np.savetxt(prefix_csv+"full_cache_debug", debug, delimiter=",")
+
+    
+run_CD_starlet(1)
