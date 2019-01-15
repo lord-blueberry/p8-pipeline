@@ -57,3 +57,8 @@ https://link.springer.com/content/pdf/10.1007%2Fs10686-005-9000-7.pdf	THE COTTON
 
 
 http://myweb.uiowa.edu/pbreheny/7600/s16/notes/2-17.pdf		coordinate descent
+
+
+
+
+https://arxiv.org/pdf/1601.04026.pdf	Scalable splitting algorithms for big-data interferometric imaging in the SKA era
