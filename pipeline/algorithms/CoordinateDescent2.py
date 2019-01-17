@@ -301,5 +301,6 @@ def full_algorithm2(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
         res_diff = np.zeros(data.vis.shape)
         res_diff = calc_residual(active_set, cache, res_diff, x_diff)
         residuals = residuals + (res_diff * starlet_base[J])
+        
         print(_magnitude(residuals))
     return residuals, x_starlets, full_cache_debug
