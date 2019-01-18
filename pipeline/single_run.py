@@ -181,7 +181,7 @@ def run_CD_starlet(idx):
     
     prefix_csv="./img_output/"
     
-    starlet_levels = 7
+    starlet_levels = 4
     lambda_cs = 0.1
     starlet_base = fourier_starlets(nuft, data, starlet_levels)
     starlets = _nfft_approximation(nuft, data.imsize,starlet_base, 0.0, data.vis)
@@ -193,7 +193,7 @@ def run_CD_starlet(idx):
     residuals = data.vis
     
     debug = np.zeros(data.imsize)
-    for i in range(0,6):
+    for i in range(0,3):
         residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
         debug += full_cache_debug
         reconstruction = to_image(x_starlets, equi_base)
@@ -205,4 +205,4 @@ def run_CD_starlet(idx):
     np.savetxt(prefix_csv+"full_cache_debug", debug, delimiter=",")
 
     
-run_CD_starlet(0)
+run_CD_starlet(1)
