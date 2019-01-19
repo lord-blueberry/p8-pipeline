@@ -294,7 +294,7 @@ def full_algorithm2(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
         res_tmp = residuals * starlet_base[J]
         x = x_starlets[J].copy()
         
-        for i in range(0, 10):
+        for i in range(0, 40):
             res_tmp, x = CoordinateDescent1(lambda_cs, active_set, cache, res_tmp, x)
         x_diff = x - x_starlets[J]
         x_starlets[J] = x

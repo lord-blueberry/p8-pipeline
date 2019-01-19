@@ -136,7 +136,7 @@ def run_CD2():
     write_img(active_set, "bla")
     
     
-    
+    import numpy.fft as fftnumpy
     def printstuff(cache, active_set, res, x):
         cache_idx = 0
         for xi in range(0, x.shape[0]):
@@ -165,6 +165,25 @@ def run_CD2():
                         
     printstuff(cache, active_set, res, x)
 
+import numpy.fft as fftnumpy
+def to_image_debug1(starlets, equi_base):
+    starlets_convolved = starlets.copy()
+    for J in range(0, len(starlets)):
+        x_fft = fftnumpy.fft2(starlets_convolved[J])
+        res_starlet = np.real(fftnumpy.ifft2(x_fft * equi_base[J]))
+        res_starlet[res_starlet < 0] = 0
+        starlets_convolved[J] = res_starlet
+    return starlets_convolved.sum(axis=0)
+
+def to_image_debug2(starlets, equi_base):
+    starlets_convolved = starlets.copy()
+    for J in range(0, len(starlets)):
+        x_fft = fftnumpy.fft2(starlets_convolved[J])
+        res_starlet = np.real(fftnumpy.ifft2(x_fft * equi_base[J]))
+        starlets_convolved[J] = res_starlet
+    out = starlets_convolved.sum(axis=0)
+    out[out< 0] = 0
+    return out
 
 def run_CD_starlet(idx):
     data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
@@ -181,8 +200,8 @@ def run_CD_starlet(idx):
     
     prefix_csv="./img_output/"
     
-    starlet_levels = 4
-    lambda_cs = 0.1
+    starlet_levels = 7
+    lambda_cs = 0.01
     starlet_base = fourier_starlets(nuft, data, starlet_levels)
     starlets = _nfft_approximation(nuft, data.imsize,starlet_base, 0.0, data.vis)
     write_img(starlets[0], "starlets0")
@@ -193,16 +212,18 @@ def run_CD_starlet(idx):
     residuals = data.vis
     
     debug = np.zeros(data.imsize)
-    for i in range(0,3):
+    for i in range(0,8):
         residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
         debug += full_cache_debug
         reconstruction = to_image(x_starlets, equi_base)
         write_img(nuft.ifft_normalized(residuals), "res"+str(i))
         write_img(reconstruction, "image"+str(i))
         np.savetxt(prefix_csv+"image"+str(i), reconstruction, delimiter=",")
+        np.savetxt(prefix_csv+"image_1dbg"+str(i), to_image_debug1(x_starlets, equi_base), delimiter=",")
+        np.savetxt(prefix_csv+"image_2dbg"+str(i), to_image_debug2(x_starlets, equi_base), delimiter=",")
         print("nonzero ", np.count_nonzero(x_starlets))
     write_img(debug, "full_cache_debug")
     np.savetxt(prefix_csv+"full_cache_debug", debug, delimiter=",")
 
     
-run_CD_starlet(1)
+run_CD_starlet(0)
