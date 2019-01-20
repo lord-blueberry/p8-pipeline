@@ -207,7 +207,7 @@ def positive_starlets(nfft, vis_size, imsize, starlet_levels):
                 starlet = np.real(fftnumpy.ifft2(last_scale - current_scale))
                 last_scale = current_scale
                 
-            #starlet[starlet < 0] = 0f_col
+            starlet[starlet < 0] = 0
             equi_base[J] = fftnumpy.fft2(starlet)
             starlet_nufft = np.roll(np.roll(starlet, imsize[0]//2, axis=0), imsize[1]//2, axis=1)
             four_base[J] = nfft.fft(starlet_nufft)
