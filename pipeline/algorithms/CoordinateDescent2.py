@@ -356,7 +356,7 @@ def full_algorithm2(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
 
 
 
-def full_algorithm3(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_starlets):
+def full_algorithm3(data, nuft, max_full, starlet_base, starlet_pos_base, lambda_cs, residuals, x_starlets):
     full_cache_debug = np.zeros(data.imsize)
     print(_magnitude(residuals))
     
@@ -387,10 +387,10 @@ def full_algorithm3(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
         active_count[active_set > 0] = 1
         full_cache_debug = full_cache_debug + active_count
         
-        res_J = residuals * starlet_base[J]
+        res_J = residuals * starlet_pos_base[J]
         x_copy = sorted_x.copy()
         
-        for i in range(0, 10):
+        for i in range(0, 20):
             for k in range(0, x_values.size):
                 x_old = sorted_x[k]
                 f_col = cache[k]
@@ -408,16 +408,14 @@ def full_algorithm3(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
                 sorted_x[k] = x_new
                 diff_res = f_col*(x_new - x_old)
                 res_J = res_J - diff_res
-        residuals2 = res_J / starlet_base[J]
         x_current[sorted_x_idx, sorted_y_idx] = sorted_x
         x_starlets[J]= x_current
         
-        x_diff = x_values - x_copy
+        x_diff = sorted_x - x_copy
         res_diff = np.zeros(data.vis.shape, dtype=np.complex128)
         res_diff = calc_residual3( cache, res_diff, x_diff)
-        residuals = residuals + (res_diff * starlet_base[J])
+        residuals = residuals + (res_diff * starlet_pos_base[J])
         print(_magnitude(residuals))
-        print("2", _magnitude(residuals2))
 
     return residuals, x_starlets, full_cache_debug
 
