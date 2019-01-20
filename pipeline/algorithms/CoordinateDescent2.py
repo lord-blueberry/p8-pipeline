@@ -175,7 +175,47 @@ def equi_starlets(data, starlet_levels):
             
         #add cJ as last
         four_base[starlet_levels] = last_conv_mat
-        return four_base 
+        return four_base
+    
+def positive_starlets(nfft, vis_size, imsize, starlet_levels):
+        def insert_spaced(mat, kernel, J):
+            disp = 2**J
+            for xi in range(0, kernel.shape[0]):
+                for yi in range(0, kernel.shape[1]):
+                    mat[xi * disp, yi * disp] = kernel[xi, yi]
+            roll = -2**(J+1)
+            mat = np.roll(mat, roll, axis=0)
+            mat = np.roll(mat, roll, axis=1)
+            return mat
+        
+        tmp = np.asarray([1.0 / 16.0, 1.0 / 4.0, 3.0 / 8.0, 1.0 / 4.0, 1.0 / 16.0])
+        row = np.asmatrix([tmp])
+        bspline =(np.dot(np.transpose(row), row))
+        
+        equi_base = np.zeros((starlet_levels+1, imsize[0], imsize[1]), dtype=np.complex128)
+        four_base = np.zeros((starlet_levels+1, vis_size), dtype=np.complex128)
+        
+        last_scale = None
+        for J in range(0, starlet_levels):
+            current_scale = fftnumpy.fft2(insert_spaced(np.zeros(imsize), bspline, J))
+            if last_scale is None:
+                last_scale = current_scale
+                starlet = np.real(fftnumpy.ifft2(1 - current_scale))
+            else:
+                current_scale = last_scale * current_scale
+                starlet = np.real(fftnumpy.ifft2(last_scale - current_scale))
+                last_scale = current_scale
+                
+            #starlet[starlet < 0] = 0
+            equi_base[J] = fftnumpy.fft2(starlet)
+            starlet_nufft = np.roll(np.roll(starlet, imsize[0]//2, axis=0), imsize[1]//2, axis=1)
+            four_base[J] = nfft.fft(starlet_nufft)
+            
+        #add cJ as last
+        equi_base[starlet_levels] = last_scale
+        last = np.real(fftnumpy.fft2(last_scale))/(imsize[0]*imsize[1])
+        four_base[starlet_levels] = nfft.fft(np.roll(np.roll(last, imsize[0]//2, axis=0), imsize[1]//2, axis=1))
+        return four_base, equi_base
 
 
 def _nfft_approximation(nuft, dimensions, starlet_base, lambda_cs, vis):
@@ -294,7 +334,7 @@ def full_algorithm2(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
         res_tmp = residuals * starlet_base[J]
         x = x_starlets[J].copy()
         
-        for i in range(0, 40):
+        for i in range(0, 10):
             res_tmp, x = CoordinateDescent1(lambda_cs, active_set, cache, res_tmp, x)
         x_diff = x - x_starlets[J]
         x_starlets[J] = x

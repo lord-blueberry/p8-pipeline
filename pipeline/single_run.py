@@ -197,22 +197,24 @@ def run_CD_starlet(idx):
     from algorithms.CoordinateDescent2 import fourier_starlets
     from algorithms.CoordinateDescent2 import equi_starlets
     from algorithms.CoordinateDescent2 import _nfft_approximation
-    
+    from algorithms.CoordinateDescent2 import positive_starlets
     prefix_csv="./img_output/"
     
-    starlet_levels = 7
-    lambda_cs = 0.01
+    starlet_levels = 3
+    lambda_cs = 0.1
+    #
+    #equi_base = equi_starlets(data, starlet_levels)
+    starlet_base, equi_base =  positive_starlets(nuft, data.vis.size, data.imsize, starlet_levels)
     starlet_base = fourier_starlets(nuft, data, starlet_levels)
     starlets = _nfft_approximation(nuft, data.imsize,starlet_base, 0.0, data.vis)
     write_img(starlets[0], "starlets0")
     np.savetxt(prefix_csv+"starlets0", starlets[0], delimiter=",")
     
-    equi_base = equi_starlets(data, starlet_levels)
     x_starlets = np.zeros((starlet_levels+1, data.imsize[0], data.imsize[1]))
     residuals = data.vis
     
     debug = np.zeros(data.imsize)
-    for i in range(0,9):
+    for i in range(0,3):
         residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
         debug += full_cache_debug
         reconstruction = to_image(x_starlets, equi_base)
@@ -226,4 +228,4 @@ def run_CD_starlet(idx):
     np.savetxt(prefix_csv+"full_cache_debug", debug, delimiter=",")
 
     
-run_CD_starlet(0)
+run_CD_starlet(1)
