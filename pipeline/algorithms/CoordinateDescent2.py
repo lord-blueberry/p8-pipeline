@@ -390,7 +390,7 @@ def full_algorithm3(data, nuft, max_full, starlet_base, starlet_pos_base, lambda
         res_J = residuals * starlet_pos_base[J]
         x_copy = sorted_x.copy()
         
-        for i in range(0, 20):
+        for i in range(0, 10):
             for k in range(0, x_values.size):
                 x_old = sorted_x[k]
                 f_col = cache[k]
