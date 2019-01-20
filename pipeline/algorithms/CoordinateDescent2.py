@@ -371,7 +371,6 @@ def full_algorithm3(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
         
         sort_idx = np.argsort((-1)*probabilities)
         sorted_x = np.take_along_axis(x_values, sort_idx, axis=0)
-        sorted_prob = np.take_along_axis(probabilities, sort_idx, axis=0)
         sorted_x_idx = np.take_along_axis(idx[0], sort_idx, axis=0)
         sorted_y_idx = np.take_along_axis(idx[1], sort_idx, axis=0)
         '''
@@ -389,11 +388,11 @@ def full_algorithm3(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
         full_cache_debug = full_cache_debug + active_count
         
         res_J = residuals * starlet_base[J]
-        x_copy = x_values.copy()
+        x_copy = sorted_x.copy()
         
         for i in range(0, 10):
             for k in range(0, x_values.size):
-                x_old = x_values[k]
+                x_old = sorted_x[k]
                 f_col = cache[k]
                 f_r = np.real(f_col)
                 f_i = np.imag(f_col)
@@ -406,11 +405,11 @@ def full_algorithm3(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
                 x_new = b / a # this times -2, it cancels out the -1/2 of the original equation
                 
                 x_new = _shrink(x_new + x_old, lambda_cs)
-                x_values[k] = x_new
+                sorted_x[k] = x_new
                 diff_res = f_col*(x_new - x_old)
                 res_J = res_J - diff_res
         residuals2 = res_J / starlet_base[J]
-        x_current[sorted_x_idx, sorted_y_idx] = x_values
+        x_current[sorted_x_idx, sorted_y_idx] = sorted_x
         x_starlets[J]= x_current
         
         x_diff = x_values - x_copy
