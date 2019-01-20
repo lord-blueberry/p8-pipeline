@@ -132,10 +132,14 @@ starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
 active_set, active_lambda = calc_active(starlets[J], max_full, lambda_cs)
 
 probabilities = active_set[active_set > 0]
+x_current = x_starlets[J]
+x_values = x_current[active_set > 0]
 idx = np.where(active_set > 0) 
-back_idx = np.arange(0, probabilities.size, step=1)
+back_idx = np.arange(0,probabilities.size, step=1)
 print("found active set with ", probabilities.size)
+
 sort_idx = np.argsort((-1)*probabilities)
+sorted_x = np.take_along_axis(x_values, sort_idx_axis=0)
 sorted_prob = np.take_along_axis(probabilities, sort_idx, axis=0)
 sorted_x_idx = np.take_along_axis(idx[0], sort_idx, axis=0)
 sorted_y_idx = np.take_along_axis(idx[1], sort_idx, axis=0)

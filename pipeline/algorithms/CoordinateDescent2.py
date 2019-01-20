@@ -307,7 +307,7 @@ def full_algorithm(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_s
             x = x_starlets[J].copy()
             
             for i in range(0, 10):
-                res_tmp, x = CoordinateDescent1(lambda_cs, active_set, cache, res_tmp, x)
+                res_tmp, x = CoordinateDescent1(lambda_cs, active_set, cache, res2_tmp, x)
             x_diff = x - x_starlets[J]
             x_starlets[J] = x
             res_diff = np.zeros(data.vis.shape)
@@ -345,3 +345,19 @@ def full_algorithm2(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
         
         print(_magnitude(residuals))
     return residuals, x_starlets, full_cache_debug
+
+
+
+def full_algorithm3(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_starlets):
+    return False
+
+
+def calc_cache3(uv, pixels, vis_size, imsize):
+    uv = -2j * np.pi * uv
+    center_pixel = math.floor(imsize[0] / 2.0)
+    cache = np.zeros((pixels.shape[0], res.size), dtype=np.complex128)
+    for i in range(0, pixels.shape[0]):
+        p = pixels[i] - center_pixel
+        f_column = np.exp(np.dot(uv, p))
+        cache[i] = f_col
+    return cache   
