@@ -326,6 +326,7 @@ def full_algorithm2(data, nuft, max_full, starlet_base, lambda_cs, residuals, x_
         starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
         active_set, active_lambda = calc_active(starlets[J], max_full, lambda_cs)
         print("found active set with ", np.count_nonzero(active_set))
+        
         active_set[active_set > 0.0] = 1
         full_cache_debug = full_cache_debug + active_set
         

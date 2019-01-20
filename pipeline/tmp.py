@@ -106,11 +106,6 @@ starlet_base_orig = fourier_starlets(nuft, data, starlet_levels)
 starlet_base, equi_base =  positive_starlets(nuft, data.vis.size, data.imsize, starlet_levels)
 starlets = _nfft_approximation(nuft, data.imsize,starlet_base, 0.0, data.vis)
 
-orig = nuft.ifft(starlet_base_orig[3] * data.vis)
-new = nuft.ifft(starlet_base[3] * data.vis)
-np.max(orig - new)
-
-
 
 write_img(starlets[0], "starlets0")
 np.savetxt(prefix_csv+"starlets0", starlets[0], delimiter=",")
@@ -118,16 +113,34 @@ np.savetxt(prefix_csv+"starlets0", starlets[0], delimiter=",")
 
 x_starlets = np.zeros((starlet_levels+1, data.imsize[0], data.imsize[1]))
 residuals = data.vis
-
 debug = np.zeros(data.imsize)
 i = 0
 residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
 
 
+
+
+
+
+debug = np.zeros(data.imsize)
+x_starlets = np.zeros((starlet_levels+1, data.imsize[0], data.imsize[1]))
+residuals = data.vis
 J = 0
+max_full = 1000
+
 starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
 active_set, active_lambda = calc_active(starlets[J], max_full, lambda_cs)
-print("found active set with ", np.count_nonzero(active_set))
+
+probabilities = active_set[active_set > 0]
+idx = np.where(active_set > 0) 
+back_idx = np.arange(0, probabilities.size, step=1)
+print("found active set with ", probabilities.size)
+sort_idx = np.argsort((-1)*probabilities)
+sorted_prob = np.take_along_axis(probabilities, sort_idx, axis=0)
+sorted_x_idx = np.take_along_axis(idx[0], sort_idx, axis=0)
+sorted_y_idx = np.take_along_axis(idx[1], sort_idx, axis=0)
+
+pixels = np.column_stack((sorted_x_idx,sorted_y_idx))
 
 active_set[active_set > 0.0] = 1
 full_cache_debug = full_cache_debug + active_set
@@ -157,6 +170,7 @@ write_img(reconstruction, "image"+str(i))
 np.savetxt(prefix_csv+"image"+str(i), reconstruction, delimiter=",")
 np.savetxt(prefix_csv+"image_1dbg"+str(i), to_image_debug1(x_starlets, equi_base), delimiter=",")
 np.savetxt(prefix_csv+"image_2dbg"+str(i), to_image_debug2(x_starlets, equi_base), delimiter=",")
-    print("nonzero ", np.count_nonzero(x_starlets))
+print("nonzero ", np.count_nonzero(x_starlets))
+
 write_img(debug, "full_cache_debug")
 np.savetxt(prefix_csv+"full_cache_debug", debug, delimiter=",")
