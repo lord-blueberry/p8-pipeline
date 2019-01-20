@@ -192,7 +192,7 @@ def run_CD_starlet(idx):
     write_img(nuft.ifft_normalized(data.vis), bmark[idx]+"_dirty")
     
     from algorithms.CoordinateDescent2 import _magnitude
-    from algorithms.CoordinateDescent2 import full_algorithm2 as full_algorithm
+    from algorithms.CoordinateDescent2 import full_algorithm3 as full_algorithm
     from algorithms.CoordinateDescent2 import to_image
     from algorithms.CoordinateDescent2 import fourier_starlets
     from algorithms.CoordinateDescent2 import equi_starlets
@@ -200,8 +200,8 @@ def run_CD_starlet(idx):
     from algorithms.CoordinateDescent2 import positive_starlets
     prefix_csv="./img_output/"
     
-    starlet_levels = 3
-    lambda_cs = 0.1
+    starlet_levels = 4
+    lambda_cs = 0.01
     #
     #equi_base = equi_starlets(data, starlet_levels)
     starlet_base, equi_base =  positive_starlets(nuft, data.vis.size, data.imsize, starlet_levels)
@@ -214,7 +214,7 @@ def run_CD_starlet(idx):
     residuals = data.vis
     
     debug = np.zeros(data.imsize)
-    for i in range(0,3):
+    for i in range(0,2):
         residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
         debug += full_cache_debug
         reconstruction = to_image(x_starlets, equi_base)

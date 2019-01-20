@@ -89,6 +89,7 @@ data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx],
 nuft = nfft(data)
 write_img(nuft.ifft_normalized(data.vis), bmark[idx]+"_dirty")
 
+from algorithms.CoordinateDescent2 import _shrink
 from algorithms.CoordinateDescent2 import _magnitude
 from algorithms.CoordinateDescent2 import full_algorithm2 as full_algorithm
 from algorithms.CoordinateDescent2 import to_image
@@ -115,7 +116,7 @@ x_starlets = np.zeros((starlet_levels+1, data.imsize[0], data.imsize[1]))
 residuals = data.vis
 debug = np.zeros(data.imsize)
 i = 0
-residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
+#residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, lambda_cs, residuals, x_starlets)
 
 
 
@@ -135,32 +136,61 @@ probabilities = active_set[active_set > 0]
 x_current = x_starlets[J]
 x_values = x_current[active_set > 0]
 idx = np.where(active_set > 0) 
-back_idx = np.arange(0,probabilities.size, step=1)
 print("found active set with ", probabilities.size)
 
 sort_idx = np.argsort((-1)*probabilities)
-sorted_x = np.take_along_axis(x_values, sort_idx_axis=0)
+sorted_x = np.take_along_axis(x_values, sort_idx, axis=0)
 sorted_prob = np.take_along_axis(probabilities, sort_idx, axis=0)
 sorted_x_idx = np.take_along_axis(idx[0], sort_idx, axis=0)
 sorted_y_idx = np.take_along_axis(idx[1], sort_idx, axis=0)
+'''
+sorted_x = x_values
+sorted_prob = probabilities
+sorted_x_idx = idx[0]
+sorted_y_idx = idx[1]
+'''
 
 pixels = np.column_stack((sorted_x_idx,sorted_y_idx))
 
-active_set[active_set > 0.0] = 1
-full_cache_debug = full_cache_debug + active_set
+active_count = active_set.copy()
+active_count[active_set > 0] = 1
+#full_cache_debug = full_cache_debug + active_count
 
 print("calculated cache")
-cache = calc_cache(data.uv, data.imsize, active_set, data.vis)
-res_tmp = residuals * starlet_base[J]
-x = x_starlets[J].copy()
+cache = calc_cache3(data.uv, pixels,  data.imsize)
 
-for i in range(0, 10):
-    res_tmp, x = CoordinateDescent1(lambda_cs, active_set, cache, res_tmp, x)
-x_diff = x - x_starlets[J]
-x_starlets[J] = x
-res_diff = np.zeros(data.vis.shape)
-res_diff = calc_residual(active_set, cache, res_diff, x_diff)
-residuals = residuals + (res_diff * starlet_base[J])
+res_J = residuals * starlet_base[J]
+res_copy = res_J.copy()
+x_copy = x_values.copy()
+
+for i in range(0, 1):
+    for k in range(0, x_values.size):
+        x_old = x_values[k]
+        f_col = cache[k]
+        f_r = np.real(f_col)
+        f_i = np.imag(f_col)
+        res_r = np.real(res_J)
+        res_i = np.imag(res_J)
+        
+        #calc -b/(2a)
+        a = np.sum(np.square(f_r) + 2*f_r*f_i + np.square(f_i))
+        b = np.sum(f_r*res_r + f_r*res_i + f_i*res_r + f_i*res_i) 
+        x_new = b / a # this times -2, it cancels out the -1/2 of the original equation
+        
+        print(x_new)
+        x_new = _shrink(x_new + x_old, lambda_cs)
+        x_values[k] = x_new
+        diff_res = f_col*(x_new - x_old)
+        res_J = res_J - diff_res
+        
+#x_diff = x - x_starlets[J]
+#x_starlets[J] = x
+#res_diff = np.zeros(data.vis.shape)
+#res_diff = calc_residual(active_set, cache, res_diff, x_diff)
+#residuals = residuals + (res_diff * starlet_base[J])
+residuals = res_J / starlet_base[J]
+x_current[sorted_x_idx, sorted_y_idx] = x_values
+x_starlets[J]= x_current
 
 print(_magnitude(residuals))
 
