@@ -360,7 +360,7 @@ def full_algorithm3(data, nuft, max_full, starlet_base, starlet_pos_base, lambda
     full_cache_debug = np.zeros(data.imsize)
     print(_magnitude(residuals))
     
-    for J in range(0, len(starlet_base)):
+    for J in reversed(range(0, len(starlet_base))):
         starlets = _nfft_approximation(nuft, data.imsize, starlet_base, 0.0, residuals)
         active_set, active_lambda = calc_active(starlets[J], max_full, lambda_cs)
         probabilities = active_set[active_set > 0]
@@ -391,7 +391,7 @@ def full_algorithm3(data, nuft, max_full, starlet_base, starlet_pos_base, lambda
         x_copy = sorted_x.copy()
         
         for i in range(0, 10):
-            for k in range(0, x_values.size):
+            for k in range(0, sorted_x.size):
                 x_old = sorted_x[k]
                 f_col = cache[k]
                 f_r = np.real(f_col)
@@ -416,16 +416,61 @@ def full_algorithm3(data, nuft, max_full, starlet_base, starlet_pos_base, lambda
         res_diff = calc_residual3( cache, res_diff, x_diff)
         residuals = residuals + (res_diff * starlet_pos_base[J])
         print(_magnitude(residuals))
-
+    
+    print("doing overall optimiz")
+    active = x_starlets.sum(axis=0)
+    idx = np.where(active > 0)
+    print("with ", idx[0].size)
+    pixels = np.column_stack((idx[0], idx[1]))
+    cache = calc_cache3(data.uv, pixels,  data.imsize)
+    print("calculated cache")
+    for i in range(0,10):
+        print(i)
+        for J in range(0, len(starlets)):
+            x_current = x_starlets[J]
+            sorted_x = x_current[active > 0]
+            x_copy = sorted_x.copy()
+            res_J = residuals * starlet_pos_base[J]
+            for k in range(0, sorted_x.size):
+                x_old = sorted_x[k]
+                f_col = cache[k]
+                f_r = np.real(f_col)
+                f_i = np.imag(f_col)
+                res_r = np.real(res_J)
+                res_i = np.imag(res_J)
+                
+                #calc -b/(2a)
+                a = np.sum(np.square(f_r) + 2*f_r*f_i + np.square(f_i))
+                b = np.sum(f_r*res_r + f_r*res_i + f_i*res_r + f_i*res_i) 
+                x_new = b / a # this times -2, it cancels out the -1/2 of the original equation
+                
+                x_new = _shrink(x_new + x_old, lambda_cs)
+                sorted_x[k] = x_new
+                diff_res = f_col*(x_new - x_old)
+                res_J = res_J - diff_res
+            x_current[idx[0], idx[1]] = sorted_x
+            x_starlets[J]= x_current
+            
+            x_diff = sorted_x - x_copy
+            res_diff = np.zeros(data.vis.shape, dtype=np.complex128)
+            res_diff = calc_residual3( cache, res_diff, x_diff)
+            residuals = residuals + (res_diff * starlet_pos_base[J])
+            
     return residuals, x_starlets, full_cache_debug
 
+    
 
 def calc_cache3(uv, pixels, imsize):
     uv = -2j * np.pi * uv
     center_pixel = math.floor(imsize[0] / 2.0)
     cache = np.zeros((pixels.shape[0], uv.shape[0]), dtype=np.complex128)
+    a = np.zeros(pixels.shape[0])
     for i in range(0, pixels.shape[0]):
         p = pixels[i] - center_pixel
-        f_column = np.exp(np.dot(uv, p))
+        f_column = np.exp(np.dot(uv, p)) / uv.shape[0] *(imsize[0]*imsize[1])
+        f_r = np.real(f_column)
+        f_i = np.imag(f_column)
+        
         cache[i] = f_column
-    return cache   
+        #a[i]= np.sum(np.square(f_r) + 2*f_r*f_i + np.square(f_i))
+    return cache, a

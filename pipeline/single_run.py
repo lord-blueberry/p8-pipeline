@@ -165,6 +165,17 @@ def run_CD2():
                         
     printstuff(cache, active_set, res, x)
 
+import numpy.fft as fftnumpy
+def to_image_pos(starlets, equi_base):
+    starlets_convolved = starlets.copy()
+    for J in range(0, len(starlets)):
+        x_fft = fftnumpy.fft2(starlets_convolved[J])
+        res_starlet = np.real(fftnumpy.ifft2(x_fft * equi_base[J]))
+        starlets_convolved[J] = res_starlet
+    summed = starlets_convolved.sum(axis=0)
+    summed[summed < 0] = 0 
+    return summed
+
 
 def run_CD_starlet(idx):
     data = read_all_freq(prefix+bmark[idx]+"/simulation.ms", column[idx], size[idx], cell[idx])
@@ -181,12 +192,16 @@ def run_CD_starlet(idx):
     from algorithms.CoordinateDescent2 import positive_starlets
     prefix_csv="./img_output/"
     
-    starlet_levels = 7
+    starlet_levels = 4
     lambda_cs = 0.01
     #
-    #equi_base = equi_starlets(data, starlet_levels)
+    equi_base = equi_starlets(data, starlet_levels)
     starlet_pos_base, equi_pos_base =  positive_starlets(nuft, data.vis.size, data.imsize, starlet_levels)
     starlet_base = fourier_starlets(nuft, data, starlet_levels)
+    
+    #starlet_pos_base = starlet_base
+    #equi_pos_base = equi_base
+    
     starlets = _nfft_approximation(nuft, data.imsize,starlet_base, 0.0, data.vis)
     write_img(starlets[0], "starlets0")
     np.savetxt(prefix_csv+"starlets0", starlets[0], delimiter=",")
@@ -195,16 +210,18 @@ def run_CD_starlet(idx):
     residuals = data.vis
     
     debug = np.zeros(data.imsize)
-    for i in range(0,4):
+    for i in range(0,1):
         residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, starlet_pos_base, lambda_cs, residuals, x_starlets)
         debug += full_cache_debug
         reconstruction = to_image(x_starlets, equi_pos_base)
+
         write_img(nuft.ifft_normalized(residuals), "res"+str(i))
         write_img(reconstruction, "image"+str(i))
         np.savetxt(prefix_csv+"image"+str(i), reconstruction, delimiter=",")
+        np.savetxt(prefix_csv+"image_pos"+str(i), to_image_pos(x_starlets, equi_pos_base), delimiter=",")
         print("nonzero ", np.count_nonzero(x_starlets))
     write_img(debug, "full_cache_debug")
     np.savetxt(prefix_csv+"full_cache_debug", debug, delimiter=",")
 
     
-run_CD_starlet(0)
+run_CD_starlet(1)
