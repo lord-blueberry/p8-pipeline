@@ -387,13 +387,13 @@ def full_algorithm3(data, nuft, max_full, starlet_base, starlet_pos_base, lambda
         active_count[active_set > 0] = 1
         full_cache_debug = full_cache_debug + active_count
         
-        res_J = residuals * starlet_pos_base[J]
+        res_J = residuals 
         x_copy = sorted_x.copy()
         
         for i in range(0, 10):
             for k in range(0, sorted_x.size):
                 x_old = sorted_x[k]
-                f_col = cache[k]
+                f_col = cache[k] * starlet_pos_base[J]
                 f_r = np.real(f_col)
                 f_i = np.imag(f_col)
                 res_r = np.real(res_J)
@@ -430,10 +430,10 @@ def full_algorithm3(data, nuft, max_full, starlet_base, starlet_pos_base, lambda
             x_current = x_starlets[J]
             sorted_x = x_current[active > 0]
             x_copy = sorted_x.copy()
-            res_J = residuals * starlet_pos_base[J]
+            res_J = residuals 
             for k in range(0, sorted_x.size):
                 x_old = sorted_x[k]
-                f_col = cache[k]
+                f_col = cache[k] * starlet_pos_base[J]
                 f_r = np.real(f_col)
                 f_i = np.imag(f_col)
                 res_r = np.real(res_J)
@@ -455,7 +455,8 @@ def full_algorithm3(data, nuft, max_full, starlet_base, starlet_pos_base, lambda
             res_diff = np.zeros(data.vis.shape, dtype=np.complex128)
             res_diff = calc_residual3( cache, res_diff, x_diff)
             residuals = residuals + (res_diff * starlet_pos_base[J])
-            
+         
+    print(_magnitude(residuals))
     return residuals, x_starlets, full_cache_debug
 
     
@@ -464,13 +465,8 @@ def calc_cache3(uv, pixels, imsize):
     uv = -2j * np.pi * uv
     center_pixel = math.floor(imsize[0] / 2.0)
     cache = np.zeros((pixels.shape[0], uv.shape[0]), dtype=np.complex128)
-    a = np.zeros(pixels.shape[0])
     for i in range(0, pixels.shape[0]):
         p = pixels[i] - center_pixel
         f_column = np.exp(np.dot(uv, p)) / uv.shape[0] *(imsize[0]*imsize[1])
-        f_r = np.real(f_column)
-        f_i = np.imag(f_column)
-        
         cache[i] = f_column
-        #a[i]= np.sum(np.square(f_r) + 2*f_r*f_i + np.square(f_i))
-    return cache, a
+    return cache   

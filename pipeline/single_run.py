@@ -210,7 +210,7 @@ def run_CD_starlet(idx):
     residuals = data.vis
     
     debug = np.zeros(data.imsize)
-    for i in range(0,1):
+    for i in range(0,2):
         residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, starlet_pos_base, lambda_cs, residuals, x_starlets)
         debug += full_cache_debug
         reconstruction = to_image(x_starlets, equi_pos_base)
