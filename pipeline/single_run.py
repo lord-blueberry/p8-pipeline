@@ -192,7 +192,7 @@ def run_CD_starlet(idx):
     from algorithms.CoordinateDescent2 import positive_starlets
     prefix_csv="./img_output/"
     
-    starlet_levels = 4
+    starlet_levels = 7
     lambda_cs = 0.01
     #
     equi_base = equi_starlets(data, starlet_levels)
@@ -224,4 +224,4 @@ def run_CD_starlet(idx):
     np.savetxt(prefix_csv+"full_cache_debug", debug, delimiter=",")
 
     
-run_CD_starlet(1)
+run_CD_starlet(0)
