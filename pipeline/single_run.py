@@ -192,7 +192,7 @@ def run_CD_starlet(idx):
     from algorithms.CoordinateDescent2 import positive_starlets
     prefix_csv="./img_output/"
     
-    starlet_levels = 7
+    starlet_levels = 4
     lambda_cs = 0.01
     #
     equi_base = equi_starlets(data, starlet_levels)
@@ -210,7 +210,7 @@ def run_CD_starlet(idx):
     residuals = data.vis
     
     debug = np.zeros(data.imsize)
-    for i in range(0,2):
+    for i in range(0,1):
         residuals, x_starlets, full_cache_debug = full_algorithm(data, nuft, 1000, starlet_base, starlet_pos_base, lambda_cs, residuals, x_starlets)
         debug += full_cache_debug
         reconstruction = to_image(x_starlets, equi_pos_base)
@@ -224,4 +224,4 @@ def run_CD_starlet(idx):
     np.savetxt(prefix_csv+"full_cache_debug", debug, delimiter=",")
 
     
-run_CD_starlet(0)
+run_CD_starlet(1)
