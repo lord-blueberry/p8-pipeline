@@ -14,7 +14,7 @@ pynfft
   * NFFT 3.2.4 <https://www-user.tu-chemnitz.de/~potts/nfft/download.php>
   
 ## pipeline folder structure
- **single_run.py** is the main project file, it contains the routines for loading simulated MS files and reconstructing an image with Coordinate Descent
+ **./pipeline/single_run.py** is the main project file, it contains the routines for loading simulated MS files and reconstructing an image with Coordinate Descent
 
  * **./pipeline/algorithms** --> contains the coordinate descent implementation
  * **./pipeline/benchmark** --> contains the simulated measurement sets
